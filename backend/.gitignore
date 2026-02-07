@@ -43,5 +43,7 @@ Thumbs.db
 
 static/
 template/
+logs/
+
 
 db.sqlite3

@@ -1,5 +1,5 @@
 """
-URL configuration for nullpass project.
+URL configuration for nullpass_project project.
 
 The `urlpatterns` list routes URLs to views. For more information please see:
     https://docs.djangoproject.com/en/6.0/topics/http/urls/
@@ -15,8 +15,21 @@ Including another URLconf
     2. Add a URL to urlpatterns:  path('blog/', include('blog.urls'))
 """
 from django.contrib import admin
-from django.urls import path
+from django.urls import path, include
+from django.views.generic import TemplateView
 
 urlpatterns = [
+    #Django admin panel
     path('admin/', admin.site.urls),
+    # API endpoints
+    path('api/auth/', include('authenticate.urls')),
+    path('api/dashboard/', include('dashboard.urls')),
+
+    # Frontend pages (HTML templates)
+    path('', TemplateView.as_view(template_name='login.html'), name='home'),
+    path('login', TemplateView.as_view(template_name='login.html'), name='login'),
+    path('authenticate', TemplateView.as_view(template_name='authenticate.html'), name='authenticate'),
+    path('dashboard', TemplateView.as_view(template_name='dashboard.html'), name='dashboard'),
+    path('threat-alert', TemplateView.as_view(template_name='threat_alert.html'), name='threat_alert'),
+    path('enroll', TemplateView.as_view(template_name='enroll.html'), name='enroll')
 ]
