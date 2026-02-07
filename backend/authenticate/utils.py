@@ -12,7 +12,7 @@ from django.conf import settings
 from django.utils import timezone
 from ecdsa import VerifyingKey, SECP256k1, BadSignatureError
 
-logger = logging.getLogger('authenticate')
+logger = logging.getLogger('authentication')
 
 
 # ============================================================================

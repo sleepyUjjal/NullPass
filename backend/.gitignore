@@ -37,3 +37,11 @@ secrets.py
 .idea/
 .DS_Store
 Thumbs.db
+
+
+#--- test frontend ---
+
+static/
+template/
+
+db.sqlite3

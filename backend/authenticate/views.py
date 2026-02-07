@@ -28,7 +28,7 @@ from .utils import (
     log_authentication_attempt
 )
 
-logger = logging.getLogger('authenticate')
+logger = logging.getLogger('authentication')
 
 
 # ============================================================================
