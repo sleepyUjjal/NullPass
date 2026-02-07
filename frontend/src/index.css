@@ -1,25 +1,21 @@
 @import "tailwindcss";
 
 @theme {
-  /* Your Custom Palette */
+  /* Palette */
   --color-platinum: #F1F1F1;
   --color-deep-twilight: #070045;
   --color-steel-azure: #0050A6;
   --color-onyx: #111111;
   --color-toffee-brown: #955E42;
   
-  /* Semantic Mapping */
-  --color-bg-main: var(--color-onyx);
-  --color-bg-surface: var(--color-deep-twilight);
-  --color-accent-primary: var(--color-steel-azure);
-  --color-accent-secondary: var(--color-toffee-brown);
-  --color-text-main: var(--color-platinum);
-
+  /* Fonts */
   --font-sans: "Inter", ui-sans-serif, system-ui, sans-serif;
   --font-mono: "JetBrains Mono", ui-monospace, monospace;
 
+  /* Animations */
   --animate-scan: scan 3s ease-in-out infinite;
   --animate-pulse-slow: pulse 4s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+  --animate-float: float 6s ease-in-out infinite;
 
   @keyframes scan {
     0% { top: 0%; opacity: 0; }
@@ -27,21 +23,56 @@
     90% { opacity: 1; }
     100% { top: 100%; opacity: 0; }
   }
+
+  @keyframes float {
+    0%, 100% { transform: translateY(0px); }
+    50% { transform: translateY(-10px); }
+  }
 }
 
-/* Global Styles */
+/* === REWORKED BACKGROUND === */
 body {
-  background-color: var(--color-bg-main);
-  color: var(--color-text-main);
+  background-color: var(--color-onyx);
+  color: var(--color-platinum);
   font-family: var(--font-sans);
-  /* Subtle mesh gradient using your Deep Twilight color */
-  background-image: 
-    radial-gradient(circle at 50% 0%, #070045 0%, transparent 50%),
-    linear-gradient(rgba(241, 241, 241, 0.02) 1px, transparent 1px),
-    linear-gradient(90deg, rgba(241, 241, 241, 0.02) 1px, transparent 1px);
-  background-size: 100% 100%, 40px 40px, 40px 40px;
+  min-height: 100vh;
+  position: relative;
+  overflow-x: hidden;
 }
 
+/* Layer 1: The Ambient Gradient Mesh (Corner to Corner) */
+body::before {
+  content: "";
+  position: fixed;
+  inset: 0;
+  z-index: -2;
+  background: 
+    /* Deep Twilight from Top-Left */
+    radial-gradient(circle at 0% 0%, var(--color-deep-twilight) 0%, transparent 60%),
+    /* Steel Azure from Bottom-Right (Soft) */
+    radial-gradient(circle at 100% 100%, rgba(0, 80, 166, 0.15) 0%, transparent 50%),
+    /* Subtle center fill to remove pure black emptiness */
+    radial-gradient(circle at 50% 50%, rgba(7, 0, 69, 0.3) 0%, transparent 100%);
+  filter: blur(20px); /* Smooths out color banding */
+}
+
+/* Layer 2: The Cyber Grid (Crisper & Full Screen) */
+body::after {
+  content: "";
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+  background-image: 
+    linear-gradient(rgba(241, 241, 241, 0.03) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(241, 241, 241, 0.03) 1px, transparent 1px);
+  background-size: 60px 60px; /* Larger, more modern grid */
+  /* Vignette mask: keeps grid visible but fades slightly at very edges */
+  mask-image: radial-gradient(circle at center, black 60%, transparent 100%);
+  pointer-events: none;
+}
+
+/* Scrollbar Polish */
 ::-webkit-scrollbar { width: 8px; }
 ::-webkit-scrollbar-track { background: var(--color-onyx); }
-::-webkit-scrollbar-thumb { background: var(--color-deep-twilight); border-radius: 4px; border: 1px solid var(--color-toffee-brown); }
+::-webkit-scrollbar-thumb { background: #1e293b; border-radius: 4px; }
+::-webkit-scrollbar-thumb:hover { background: var(--color-steel-azure); }
