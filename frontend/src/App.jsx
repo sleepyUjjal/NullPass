@@ -16,7 +16,7 @@ const Navbar = () => {
         <Link to="/" className="flex items-center gap-2 group">
           <Shield className="w-6 h-6 text-brand-cyan transition-transform group-hover:rotate-12" />
           <span className="text-xl font-bold tracking-tighter text-white">
-            Identi<span className="text-brand-cyan">Key</span>
+            Null<span className="text-brand-cyan">Pass</span>
           </span>
         </Link>
         
