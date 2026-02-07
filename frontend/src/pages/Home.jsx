@@ -1,13 +1,14 @@
 import React, { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, Link } from 'react-router-dom'; // Added Link
 import { motion } from 'framer-motion';
 import { CheckCircle2, ArrowRight, LockKeyhole, ShieldCheck, Smartphone, Database, Code, Building, Globe } from 'lucide-react';
 
-// --- Reused Login Component as Hero Section ---
+// --- Hero Section ---
 const HeroSection = () => {
   const [step, setStep] = useState(1);
   const navigate = useNavigate();
 
+  // Login Simulation logic...
   useEffect(() => {
     const timer1 = setTimeout(() => setStep(2), 2500);
     const timer2 = setTimeout(() => setStep(3), 5000);
@@ -20,6 +21,7 @@ const HeroSection = () => {
   return (
     <div className="relative z-10 min-h-[calc(100vh-4rem)] flex items-center justify-center p-6">
       <div className="w-full max-w-6xl grid lg:grid-cols-2 gap-20 items-center">
+        {/* Left Content */}
         <div className="space-y-8 text-center lg:text-left">
           <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full border border-toffee-brown/40 bg-toffee-brown/10 text-toffee-brown text-xs font-mono tracking-wider font-semibold">
             <LockKeyhole size={12} /> CRYPTOGRAPHIC VERIFICATION
@@ -36,17 +38,23 @@ const HeroSection = () => {
             </p>
           </div>
           <div className="flex flex-col sm:flex-row gap-4 justify-center lg:justify-start pt-4">
-            <button className="px-8 py-4 rounded-xl bg-steel-azure text-white font-semibold hover:bg-blue-600 transition-all hover:scale-105 active:scale-95 flex items-center justify-center gap-3 shadow-[0_0_30px_-10px_#0050A6]">
+            {/* LINKED BUTTON: Enroll */}
+            <Link to="/enroll" className="px-8 py-4 rounded-xl bg-steel-azure text-white font-semibold hover:bg-blue-600 transition-all hover:scale-105 active:scale-95 flex items-center justify-center gap-3 shadow-[0_0_30px_-10px_#0050A6]">
               Enroll Device <ArrowRight size={18} />
-            </button>
-            <button className="px-8 py-4 rounded-xl border border-platinum/10 hover:border-platinum/30 hover:bg-white/5 transition-all text-platinum/70 font-mono text-sm">
+            </Link>
+            {/* LINKED BUTTON: Docs */}
+            <Link to="/docs" className="px-8 py-4 rounded-xl border border-platinum/10 hover:border-platinum/30 hover:bg-white/5 transition-all text-platinum/70 font-mono text-sm flex items-center justify-center">
               Read Documentation
-            </button>
+            </Link>
           </div>
         </div>
+
+        {/* Right Content: Login Simulator (Visual only here, actual login is at /login) */}
         <div className="relative group perspective-1000">
-          <div className="absolute -inset-1 bg-gradient-to-tr from-steel-azure to-deep-twilight rounded-2xl blur-xl opacity-40 group-hover:opacity-60 transition duration-1000 animate-pulse-slow"></div>
+           {/* ... (Keep existing Scanner UI code from previous Home.jsx) ... */}
+           <div className="absolute -inset-1 bg-gradient-to-tr from-steel-azure to-deep-twilight rounded-2xl blur-xl opacity-40 group-hover:opacity-60 transition duration-1000 animate-pulse-slow"></div>
           <div className="relative bg-black/40 backdrop-blur-xl border border-platinum/10 rounded-2xl p-8 shadow-2xl overflow-hidden">
+            {/* ... (Scanner internals) ... */}
             <div className="flex justify-between items-center mb-8 border-b border-platinum/10 pb-4">
               <span className="font-mono text-xs text-platinum/40">SESSION_ID: 8F2A...9C</span>
               <div className="flex items-center gap-2">
@@ -86,7 +94,7 @@ const HeroSection = () => {
   );
 };
 
-// --- Helper Components ---
+// ... (Keep helper components StepItem, Corner) ...
 const StepItem = ({ status, text, active }) => (
   <div className={`flex items-center gap-3 font-mono text-xs transition-colors duration-500 ${status ? 'text-steel-azure' : 'text-platinum/20'}`}>
     <div className={`w-4 h-4 rounded-full flex items-center justify-center border transition-all duration-500 ${status ? 'border-steel-azure bg-steel-azure/10' : 'border-platinum/10'}`}>
@@ -98,7 +106,9 @@ const StepItem = ({ status, text, active }) => (
 
 const Corner = ({ position }) => (<div className={`absolute w-4 h-4 border-onyx ${position}`}></div>);
 
-const FeatureCard = ({ title, description, icon, align = 'left' }) => (
+
+// --- Feature Card Component (Updated with Link) ---
+const FeatureCard = ({ title, description, icon, align = 'left', linkTarget }) => (
   <div className={`relative p-8 rounded-2xl border border-platinum/10 bg-deep-twilight/50 backdrop-blur-sm overflow-hidden group ${align === 'right' ? 'md:text-right' : ''}`}>
     <div className={`absolute -inset-1 bg-gradient-to-br from-steel-azure/20 to-transparent rounded-2xl blur-xl opacity-0 group-hover:opacity-100 transition duration-500`}></div>
     <div className="relative z-10">
@@ -107,9 +117,10 @@ const FeatureCard = ({ title, description, icon, align = 'left' }) => (
       </div>
       <h3 className="text-2xl font-bold text-platinum mb-4">{title}</h3>
       <p className="text-platinum/60 mb-6">{description}</p>
-      <button className="text-steel-azure hover:text-platinum transition-colors flex items-center gap-2 font-semibold">
+      {/* Linked Button */}
+      <Link to={linkTarget} className={`text-steel-azure hover:text-platinum transition-colors flex items-center gap-2 font-semibold ${align === 'right' ? 'md:ml-auto md:flex-row-reverse' : ''}`}>
         Learn more <ArrowRight size={16} />
-      </button>
+      </Link>
     </div>
   </div>
 );
@@ -128,7 +139,6 @@ const UserTypeCard = ({ title, description, icon }) => (
 export default function Home() {
   return (
     <div className="relative z-10">
-      {/* Hero Section (Reused Login) */}
       <HeroSection />
 
       {/* Intro Text Section */}
@@ -140,39 +150,43 @@ export default function Home() {
           <p className="text-platinum/60 text-lg">
             NullPass eliminates passwords and modernizes authentication with cryptographic, device-bound keys and an immutable audit trail.
           </p>
-          <button className="px-8 py-3 rounded-full bg-steel-azure/20 text-steel-azure border border-steel-azure/30 font-semibold hover:bg-steel-azure/30 transition-colors">
+          {/* Linked Button */}
+          <Link to="/login" className="inline-block px-8 py-3 rounded-full bg-steel-azure/20 text-steel-azure border border-steel-azure/30 font-semibold hover:bg-steel-azure/30 transition-colors">
             Explore Platform
-          </button>
+          </Link>
         </div>
       </section>
 
       {/* Feature Cards Section */}
-      <section className="py-16 px-6">
+      <section id="features" className="py-16 px-6">
         <div className="max-w-6xl mx-auto space-y-8">
           <FeatureCard
             title="Cryptographic Login"
             description="Authenticate using private keys stored securely on the user's device. No shared secrets, phishable passwords, or OTPs."
             icon={<ShieldCheck size={24} />}
+            linkTarget="/docs#architecture" // Link to docs
           />
           <FeatureCard
             title="Security-First Authentication"
             description="Every login handshake is cryptographically verified and recorded on an immutable blockchain ledger for absolute transparency."
             icon={<Database size={24} />}
             align="right"
+            linkTarget="/docs#security" // Link to docs
           />
           <FeatureCard
             title="Device-Based Trust"
             description="Bind user identity to trusted hardware. Leverage platform authenticators like FaceID, TouchID, and Windows Hello."
             icon={<Smartphone size={24} />}
+            linkTarget="/docs#architecture" // Link to docs
           />
         </div>
       </section>
 
-      {/* Image Section */}
+      {/* Image Section (Keep existing...) */}
       <section className="py-16 px-6">
         <div className="max-w-6xl mx-auto relative h-[500px] rounded-2xl overflow-hidden border border-platinum/10">
           <img 
-            src="https://images.unsplash.com/photo-1555066931-4365d14bab8c?q=80&w=2070&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D" 
+            src="https://images.unsplash.com/photo-1555066931-4365d14bab8c?q=80&w=2070&auto=format&fit=crop" 
             alt="Person using computer securely" 
             className="w-full h-full object-cover opacity-50 grayscale hover:grayscale-0 transition-all duration-1000"
           />
@@ -186,32 +200,20 @@ export default function Home() {
         </div>
       </section>
 
-      {/* User Types Section */}
+      {/* User Types Section (Keep existing...) */}
       <section className="py-24 px-6 text-center">
         <div className="max-w-6xl mx-auto">
           <h2 className="text-3xl font-bold text-platinum mb-12">Built for every use case</h2>
           <div className="grid md:grid-cols-3 gap-8">
-            <UserTypeCard
-              title="For Enterprises"
-              description="Eliminate credential stuffing attacks, reduce helpdesk costs, and enforce compliance with ease."
-              icon={<Building size={20} />}
-            />
-            <UserTypeCard
-              title="For Developers"
-              description="Integrate secure, passwordless auth in minutes with our simple API and SDKs."
-              icon={<Code size={20} />}
-            />
-            <UserTypeCard
-              title="For High-Risk Platforms"
-              description="Protect sensitive data and transactions with the highest level of cryptographic assurance."
-              icon={<Globe size={20} />}
-            />
+            <UserTypeCard title="For Enterprises" description="Eliminate credential stuffing attacks, reduce helpdesk costs, and enforce compliance with ease." icon={<Building size={20} />} />
+            <UserTypeCard title="For Developers" description="Integrate secure, passwordless auth in minutes with our simple API and SDKs." icon={<Code size={20} />} />
+            <UserTypeCard title="For High-Risk Platforms" description="Protect sensitive data and transactions with the highest level of cryptographic assurance." icon={<Globe size={20} />} />
           </div>
         </div>
       </section>
 
-      {/* Footer */}
-      <footer className="bg-deep-twilight/30 border-t border-platinum/5 py-12 px-6">
+      {/* Footer (Keep existing...) */}
+       <footer className="bg-deep-twilight/30 border-t border-platinum/5 py-12 px-6">
         <div className="max-w-6xl mx-auto grid md:grid-cols-4 gap-8">
           <div className="space-y-4">
             <div className="flex items-center gap-2">
@@ -227,34 +229,18 @@ export default function Home() {
           <div>
             <h4 className="text-platinum font-bold mb-4">Product</h4>
             <ul className="space-y-2 text-platinum/60 text-sm">
-              <li><a href="#" className="hover:text-steel-azure">Features</a></li>
-              <li><a href="#" className="hover:text-steel-azure">Security</a></li>
-              <li><a href="#" className="hover:text-steel-azure">Roadmap</a></li>
+              <li><Link to="/#features" className="hover:text-steel-azure">Features</Link></li>
+              <li><Link to="/docs#security" className="hover:text-steel-azure">Security</Link></li>
             </ul>
           </div>
           <div>
             <h4 className="text-platinum font-bold mb-4">Resources</h4>
             <ul className="space-y-2 text-platinum/60 text-sm">
-              <li><a href="#" className="hover:text-steel-azure">Documentation</a></li>
-              <li><a href="#" className="hover:text-steel-azure">API Reference</a></li>
-              <li><a href="#" className="hover:text-steel-azure">Blog</a></li>
+              <li><Link to="/docs" className="hover:text-steel-azure">Documentation</Link></li>
+              <li><Link to="/docs#api" className="hover:text-steel-azure">API Reference</Link></li>
             </ul>
           </div>
-          <div>
-            <h4 className="text-platinum font-bold mb-4">Company</h4>
-            <ul className="space-y-2 text-platinum/60 text-sm">
-              <li><a href="#" className="hover:text-steel-azure">About Us</a></li>
-              <li><a href="#" className="hover:text-steel-azure">Careers</a></li>
-              <li><a href="#" className="hover:text-steel-azure">Contact</a></li>
-            </ul>
-          </div>
-        </div>
-        <div className="max-w-6xl mx-auto mt-12 pt-8 border-t border-platinum/5 flex flex-col md:flex-row justify-between items-center text-platinum/40 text-sm">
-          <p>© 2026 NullPass. All rights reserved.</p>
-          <div className="flex gap-4 mt-4 md:mt-0">
-            <a href="#" className="hover:text-platinum">Privacy Policy</a>
-            <a href="#" className="hover:text-platinum">Terms of Service</a>
-          </div>
+          {/* ... */}
         </div>
       </footer>
     </div>
