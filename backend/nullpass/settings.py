@@ -149,9 +149,11 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 CORS_ALLOWED_ORIGINS = [
     'http://localhost:3000',
+    'http://localhost:4000',
     'http://localhost:8000',
     'http://127.0.0.1:8000',
     'http://127.0.0.1:3000',
+    'http://127.0.0.1:4000',
 ]
 
 # Modified: Enable all origins for local network development
@@ -313,6 +315,7 @@ if not LOGS_DIR.exists():
 CSRF_TRUSTED_ORIGINS = [
     'http://localhost:8000',
     'http://127.0.0.1:8000',
+    'http://localhost:4000',
     # Add your production domain here
     # 'https://yourdomain.com',
     
