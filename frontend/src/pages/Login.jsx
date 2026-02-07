@@ -32,13 +32,13 @@ export default function Login() {
           
           <div className="space-y-4">
             <h1 className="text-6xl lg:text-8xl font-bold tracking-tighter text-platinum leading-[0.9]">
-              Verify <br />
+              Identity, <br />
               <span className="text-transparent bg-clip-text bg-gradient-to-r from-steel-azure via-blue-400 to-white">
-                Identity.
+                Elevated.
               </span>
             </h1>
             <p className="text-lg text-platinum/60 max-w-md mx-auto lg:mx-0 leading-relaxed font-light">
-              Eliminate passwords. Authenticate using device-bound keys secured by the blockchain.
+              NullPass is a passwordless digital security system that replaces passwords and OTPs with cryptographic identity verification. Secure access without shared secrets.
             </p>
           </div>
           
