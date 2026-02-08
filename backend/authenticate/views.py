@@ -35,7 +35,7 @@ logger = logging.getLogger('authentication')
 # ============================================================================
 
 # This points QR codes to your React Frontend (Port 5173)
-FRONTEND_BASE_URL = "https://43.205.194.18/"
+FRONTEND_BASE_URL = "https://43.205.194.18"
 
 
 # ============================================================================
