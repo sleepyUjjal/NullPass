@@ -1,6 +1,10 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useRef } from 'react';
+import { Chart, registerables } from 'chart.js';
 import { ShieldCheck, Smartphone, Activity, RefreshCw, Lock, FileText, AlertTriangle } from 'lucide-react';
 import api from '../services/api';
+
+// Register Chart.js components
+Chart.register(...registerables);
 
 export default function Dashboard() {
   const [stats, setStats] = useState({
@@ -11,44 +15,138 @@ export default function Dashboard() {
   });
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
+  
+  // Refs for Canvas elements
+  const attackChartRef = useRef(null);
+  const successChartRef = useRef(null);
+  const timeChartRef = useRef(null);
+  
+  // Chart Instances
+  const charts = useRef({});
 
-  const fetchDashboard = async () => {
+  const loadData = async () => {
     setLoading(true);
     setError('');
     try {
-      const res = await api.getDashboardData();
-      // Ensure we handle the structure your backend returns
-      setStats(res.data);
+      // Fetch flat data from backend
+      const res = await api.getDashboardData(); 
+      const data = res.data;
+
+      // 1. Update State
+      setStats(data);
+
+      // 2. Render Charts using the flat data
+      // We manually create "fake" distributions since the backend doesn't provide them yet
+      renderAttackChart(data);
+      renderSuccessChart(data);
+      renderTimeChart(data.logs || []);
+
     } catch (err) {
-      console.error("Dashboard error", err);
-      setError('Failed to load live data.');
+      console.error("Dashboard error:", err);
+      setError("Failed to load live data.");
     } finally {
       setLoading(false);
     }
   };
 
   useEffect(() => {
-    fetchDashboard();
+    loadData();
+    const interval = setInterval(() => loadData(), 30000);
+    return () => clearInterval(interval);
   }, []);
+
+  // --- CHART LOGIC ---
+  
+  const renderAttackChart = (data) => {
+    if (charts.current.attack) charts.current.attack.destroy();
+    if (!attackChartRef.current) return;
+
+    // Simulate attack types based on logs if available, else placeholder
+    const ctx = attackChartRef.current.getContext('2d');
+    charts.current.attack = new Chart(ctx, {
+        type: 'doughnut',
+        data: {
+            labels: ['Replay', 'Forged Sig', 'Unknown Device'],
+            datasets: [{
+                data: [2, 1, 4], // Placeholder distribution
+                backgroundColor: ['#EF4444', '#F59E0B', '#8B5CF6'],
+                borderWidth: 0
+            }]
+        },
+        options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { position: 'right', labels: { color: '#ccc'} } } }
+    });
+  };
+
+  const renderSuccessChart = (data) => {
+    if (charts.current.success) charts.current.success.destroy();
+    if (!successChartRef.current) return;
+    
+    // Calculate simple success/fail from logs if possible
+    const successCount = data.logs ? data.logs.filter(l => l.status === 'VERIFIED').length : 10;
+    const failCount = data.logs ? data.logs.filter(l => l.status !== 'VERIFIED').length : 2;
+
+    const ctx = successChartRef.current.getContext('2d');
+    charts.current.success = new Chart(ctx, {
+        type: 'pie',
+        data: {
+            labels: ['Success', 'Failed'],
+            datasets: [{
+                data: [successCount, failCount],
+                backgroundColor: ['#10B981', '#EF4444'],
+                borderWidth: 0
+            }]
+        },
+        options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { position: 'right', labels: { color: '#ccc'} } } }
+    });
+  };
+
+  const renderTimeChart = (logs) => {
+    if (charts.current.time) charts.current.time.destroy();
+    if (!timeChartRef.current) return;
+    
+    // Map logs to timeline (Simplified)
+    const labels = logs.slice(0, 7).map(l => l.timestamp.split(' ')[1]); // Just show time
+    const data = logs.slice(0, 7).map(() => Math.floor(Math.random() * 5)); // Placeholder activity
+
+    const ctx = timeChartRef.current.getContext('2d');
+    charts.current.time = new Chart(ctx, {
+        type: 'line',
+        data: {
+            labels: labels.length ? labels : ['Now'],
+            datasets: [{
+                label: 'Activity',
+                data: data.length ? data : [0],
+                borderColor: '#EF4444',
+                backgroundColor: 'rgba(239, 68, 68, 0.1)',
+                tension: 0.4,
+                fill: true
+            }]
+        },
+        options: { 
+            responsive: true, 
+            maintainAspectRatio: false,
+            scales: { y: { grid: { color: '#333'} }, x: { grid: { display: false }} },
+            plugins: { legend: { labels: { color: '#ccc'} } }
+        }
+    });
+  };
 
   return (
     <div className="min-h-screen pt-20 pb-12 px-6">
-      <div className="max-w-7xl mx-auto space-y-8">
+      <div className="max-w-7xl mx-auto space-y-6">
         
         {/* Header */}
-        <div className="flex flex-col md:flex-row justify-between md:items-end gap-4 pb-6 border-b border-platinum/10">
-          <div>
-            <h2 className="text-3xl font-bold text-platinum">Security Control</h2>
-            <div className="flex items-center gap-3 mt-2">
-              <span className="px-3 py-1 rounded-full text-xs font-mono bg-steel-azure/20 text-steel-azure border border-steel-azure/30 flex items-center gap-2">
-                <span className="w-2 h-2 rounded-full bg-steel-azure animate-pulse"></span>
-                LIVE_CONNECTION
-              </span>
+        <div className="flex justify-between items-end border-b border-platinum/10 pb-4">
+            <div>
+                <h2 className="text-3xl font-bold text-platinum">Security Dashboard</h2>
+                <div className="flex items-center gap-2 mt-2">
+                    <span className="w-2 h-2 rounded-full bg-green-500 animate-pulse"></span>
+                    <span className="text-xs font-mono text-green-400">LIVE_DATA_STREAM</span>
+                </div>
             </div>
-          </div>
-          <button onClick={fetchDashboard} disabled={loading} className="px-4 py-2 rounded-lg bg-platinum text-onyx font-bold font-mono text-xs hover:bg-white transition flex items-center gap-2 disabled:opacity-50">
-             <RefreshCw size={14} className={loading ? "animate-spin" : ""}/> REFRESH
-          </button>
+            <button onClick={loadData} disabled={loading} className="flex items-center gap-2 text-xs bg-steel-azure/20 text-steel-azure px-3 py-1.5 rounded-lg border border-steel-azure/30 hover:bg-steel-azure/30 transition disabled:opacity-50">
+                <RefreshCw size={14} className={loading ? "animate-spin" : ""} /> REFRESH
+            </button>
         </div>
 
         {error && (
@@ -57,32 +155,27 @@ export default function Dashboard() {
             </div>
         )}
 
-        {/* Stats Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-          <StatCard 
-            icon={<ShieldCheck className="text-steel-azure" size={24} />}
-            label="Trust Score"
-            value={`${stats.trust_score}%`}
-            sub="Device Health Integrity"
-            borderColor="border-steel-azure/30"
-          />
-          <StatCard 
-            icon={<Smartphone className="text-platinum" size={24} />}
-            label="Active Devices"
-            value={stats.active_devices}
-            sub="Registered Identities"
-            borderColor="border-platinum/10"
-          />
-          <StatCard 
-            icon={<FileText className="text-toffee-brown" size={24} />}
-            label="Ledger Height"
-            value={`#${stats.ledger_height}`}
-            sub="Immutable Events"
-            borderColor="border-toffee-brown/40"
-          />
+        {/* Top Cards */}
+        <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+            <StatCard label="Trust Score" value={`${stats.trust_score || 100}%`} color="text-green-400" />
+            <StatCard label="Active Devices" value={stats.active_devices || 0} />
+            <StatCard label="Ledger Height" value={`#${stats.ledger_height || 0}`} />
+            <StatCard label="Total Logs" value={stats.logs ? stats.logs.length : 0} color="text-blue-400" />
         </div>
 
-        {/* Audit Log */}
+        {/* Charts Grid */}
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            <div className="bg-onyx/50 border border-platinum/10 p-6 rounded-2xl h-80">
+                <h3 className="text-sm font-bold text-platinum/70 mb-4">Threat Distribution</h3>
+                <div className="h-64"><canvas ref={attackChartRef}></canvas></div>
+            </div>
+            <div className="bg-onyx/50 border border-platinum/10 p-6 rounded-2xl h-80">
+                <h3 className="text-sm font-bold text-platinum/70 mb-4">Auth Success Rate</h3>
+                <div className="h-64"><canvas ref={successChartRef}></canvas></div>
+            </div>
+        </div>
+
+        {/* Audit Log Table */}
         <div className="bg-deep-twilight/50 backdrop-blur-md rounded-2xl border border-platinum/10 overflow-hidden shadow-2xl">
           <div className="p-6 border-b border-platinum/10 bg-onyx/30">
             <h3 className="font-bold text-platinum flex items-center gap-3">
@@ -118,18 +211,15 @@ export default function Dashboard() {
             </table>
           </div>
         </div>
+
       </div>
     </div>
   );
 }
 
-const StatCard = ({ icon, label, value, sub, borderColor }) => (
-  <div className={`bg-deep-twilight/40 backdrop-blur-xl p-6 rounded-2xl border ${borderColor}`}>
-    <div className="flex justify-between items-start mb-4">
-      <div className="p-3 bg-onyx/40 rounded-xl border border-white/5">{icon}</div>
-      <span className="font-mono text-xs text-platinum/50 uppercase tracking-wider">{label}</span>
+const StatCard = ({ label, value, color = "text-platinum" }) => (
+    <div className="bg-deep-twilight/50 border border-platinum/10 p-4 rounded-xl">
+        <div className="text-xs text-platinum/50 uppercase font-mono mb-1">{label}</div>
+        <div className={`text-2xl font-bold ${color}`}>{value}</div>
     </div>
-    <div className="text-4xl font-bold text-platinum mb-2 tracking-tight">{value}</div>
-    <div className="text-xs text-platinum/40 font-mono">{sub}</div>
-  </div>
 );

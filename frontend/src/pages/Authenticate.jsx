@@ -15,7 +15,6 @@ export default function Authenticate() {
 
   useEffect(() => {
     const performAuthAction = async () => {
-      // 1. Prevent Double Run
       if (hasRun.current) return;
       hasRun.current = true;
 
@@ -37,7 +36,6 @@ export default function Authenticate() {
           addLog(`Device ID: ${deviceId}`);
           addLog("Registering with Server...");
 
-          // 1. Register Device
           const enrollRes = await api.finalizeEnrollment({
             device_id: deviceId,
             public_key: pubPem,
@@ -51,22 +49,19 @@ export default function Authenticate() {
             
             addLog("Device Registered Successfully.");
 
-            // 2. Mark QR as Used (If challenge_id exists)
-            if (challengeId) {
-                addLog(`Finalizing Enrollment Session (${challengeId.substring(0,8)}...)...`);
-                
+            // FIX: Only verify if we actually received a valid challenge ID from the backend
+            if (challengeId && challengeId !== 'undefined' && challengeId !== 'null') {
+                addLog("Finalizing Session...");
                 const signature = await signData(privBase64, challengeId + nonce);
-                
-                // Send Verification
                 await api.verifySignature({
                     challenge_id: challengeId,
                     device_id: deviceId,
                     signature: signature
                 });
-                
                 addLog("Session Finalized.");
             } else {
-                addLog("WARNING: No Challenge ID found in URL. Registration okay, but screen won't redirect.");
+                addLog("NOTE: Backend did not provide a Session ID.");
+                addLog("Please click 'I've Finished Scanning' on your main screen.");
             }
 
             setStatus("SUCCESS: Device Enrolled!");
@@ -81,7 +76,7 @@ export default function Authenticate() {
       // ------------------------------------------
       // FLOW 2: LOGIN
       // ------------------------------------------
-      else if (challengeId) {
+      else if (challengeId && challengeId !== 'undefined') {
         try {
           const deviceId = localStorage.getItem('nullpass_device_id');
           const privKey = localStorage.getItem('nullpass_private_key');
@@ -114,6 +109,7 @@ export default function Authenticate() {
       
       else {
         setStatus("Waiting for QR Scan...");
+        addLog("No action detected in URL.");
       }
     };
 
@@ -123,7 +119,7 @@ export default function Authenticate() {
   return (
     <div className="min-h-screen bg-black text-green-400 p-8 font-mono text-sm">
       <div className="max-w-md mx-auto border border-green-800 p-6 rounded shadow-[0_0_20px_rgba(0,255,0,0.1)]">
-        <h1 className="text-xl font-bold mb-4 border-b border-green-800 pb-2">NULLPASS_AUTHENTICATOR_V1</h1>
+        <h1 className="text-xl font-bold mb-4 border-b border-green-800 pb-2">NULLPASS_AUTHENTICATOR</h1>
         
         <div className="mb-6">
           <span className="text-gray-500">STATUS:</span>
