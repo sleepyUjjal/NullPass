@@ -1,80 +1,96 @@
-import React from 'react';
-import { ShieldCheck, Smartphone, Activity, ExternalLink, RefreshCw, FileText, Lock } from 'lucide-react';
-import { Link } from 'react-router-dom';
+import React, { useEffect, useState } from 'react';
+import { ShieldCheck, Smartphone, Activity, RefreshCw, Lock, FileText, AlertTriangle } from 'lucide-react';
+import api from '../services/api';
 
 export default function Dashboard() {
+  const [stats, setStats] = useState({
+    trust_score: 100,
+    active_devices: 0,
+    ledger_height: 0,
+    logs: []
+  });
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState('');
+
+  const fetchDashboard = async () => {
+    setLoading(true);
+    setError('');
+    try {
+      const res = await api.getDashboardData();
+      // Ensure we handle the structure your backend returns
+      setStats(res.data);
+    } catch (err) {
+      console.error("Dashboard error", err);
+      setError('Failed to load live data.');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchDashboard();
+  }, []);
+
   return (
     <div className="min-h-screen pt-20 pb-12 px-6">
       <div className="max-w-7xl mx-auto space-y-8">
         
-        {/* Header Section */}
+        {/* Header */}
         <div className="flex flex-col md:flex-row justify-between md:items-end gap-4 pb-6 border-b border-platinum/10">
           <div>
             <h2 className="text-3xl font-bold text-platinum">Security Control</h2>
             <div className="flex items-center gap-3 mt-2">
               <span className="px-3 py-1 rounded-full text-xs font-mono bg-steel-azure/20 text-steel-azure border border-steel-azure/30 flex items-center gap-2">
                 <span className="w-2 h-2 rounded-full bg-steel-azure animate-pulse"></span>
-                SYSTEM_NOMINAL
+                LIVE_CONNECTION
               </span>
-              <span className="text-platinum/40 text-sm font-mono">Session ID: 8F2A...9C</span>
             </div>
           </div>
-          <div className="flex gap-3">
-            <Link to="/alert" className="px-4 py-2 rounded-lg border border-red-500/30 text-red-400 font-mono text-xs hover:bg-red-500/10 transition flex items-center gap-2">
-              <Activity size={14} /> SIMULATE_THREAT
-            </Link>
-            <button className="px-4 py-2 rounded-lg bg-platinum text-onyx font-bold font-mono text-xs hover:bg-white transition shadow-[0_0_15px_-5px_white]">
-              REVOKE_ACCESS
-            </button>
-          </div>
+          <button onClick={fetchDashboard} disabled={loading} className="px-4 py-2 rounded-lg bg-platinum text-onyx font-bold font-mono text-xs hover:bg-white transition flex items-center gap-2 disabled:opacity-50">
+             <RefreshCw size={14} className={loading ? "animate-spin" : ""}/> REFRESH
+          </button>
         </div>
+
+        {error && (
+            <div className="bg-red-900/20 border border-red-500/30 text-red-400 p-4 rounded-xl flex items-center gap-3">
+                <AlertTriangle size={20} /> {error}
+            </div>
+        )}
 
         {/* Stats Grid */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-          {/* Trust Score - Steel Azure */}
           <StatCard 
             icon={<ShieldCheck className="text-steel-azure" size={24} />}
             label="Trust Score"
-            value="98%"
-            sub="Encryption: ECDSA P-256"
+            value={`${stats.trust_score}%`}
+            sub="Device Health Integrity"
             borderColor="border-steel-azure/30"
-            glowColor="group-hover:shadow-[0_0_30px_-10px_#0050A6]"
           />
-          
-          {/* Active Devices - Platinum */}
           <StatCard 
             icon={<Smartphone className="text-platinum" size={24} />}
             label="Active Devices"
-            value="03"
-            sub="Primary: MacBook Pro M3"
+            value={stats.active_devices}
+            sub="Registered Identities"
             borderColor="border-platinum/10"
-            glowColor="group-hover:shadow-[0_0_30px_-10px_rgba(255,255,255,0.2)]"
           />
-          
-          {/* Audit Ledger - Toffee Brown */}
           <StatCard 
             icon={<FileText className="text-toffee-brown" size={24} />}
             label="Ledger Height"
-            value="#19,204"
-            sub="Synced: 12s ago"
+            value={`#${stats.ledger_height}`}
+            sub="Immutable Events"
             borderColor="border-toffee-brown/40"
-            glowColor="group-hover:shadow-[0_0_30px_-10px_#955E42]"
           />
         </div>
 
-        {/* Immutable Audit Log Table */}
+        {/* Audit Log */}
         <div className="bg-deep-twilight/50 backdrop-blur-md rounded-2xl border border-platinum/10 overflow-hidden shadow-2xl">
-          <div className="p-6 border-b border-platinum/10 flex justify-between items-center bg-onyx/30">
+          <div className="p-6 border-b border-platinum/10 bg-onyx/30">
             <h3 className="font-bold text-platinum flex items-center gap-3">
               Immutable Audit Trail
-              {/* Toffee Brown Badge */}
               <span className="px-2 py-0.5 rounded text-[10px] font-mono bg-toffee-brown/10 text-toffee-brown border border-toffee-brown/30 flex items-center gap-1">
                 <Lock size={10} /> BLOCKCHAIN_VERIFIED
               </span>
             </h3>
-            <button className="text-platinum/40 hover:text-platinum transition p-2 hover:bg-white/5 rounded-lg">
-              <RefreshCw size={16} />
-            </button>
           </div>
           
           <div className="overflow-x-auto">
@@ -83,33 +99,21 @@ export default function Dashboard() {
                 <tr className="border-b border-platinum/5 text-xs font-mono uppercase text-platinum/40 bg-onyx/40">
                   <th className="p-4">Timestamp</th>
                   <th className="p-4">Event Type</th>
-                  <th className="p-4">Hash (SHA-256)</th>
+                  <th className="p-4">Hash</th>
                   <th className="p-4">Status</th>
-                  <th className="p-4 text-right">Explorer</th>
                 </tr>
               </thead>
               <tbody className="text-sm font-mono text-platinum/80 divide-y divide-platinum/5">
-                {[1,2,3,4,5].map((_, i) => (
-                  <tr key={i} className="hover:bg-steel-azure/5 transition-colors group">
-                    <td className="p-4">2026-02-07 14:30:{20 + i}</td>
-                    <td className="p-4">
-                      <span className="px-2 py-1 rounded bg-platinum/5 text-xs border border-platinum/10 group-hover:border-steel-azure/30 transition-colors">
-                        AUTH_CHALLENGE
-                      </span>
-                    </td>
-                    <td className="p-4 text-platinum/40 group-hover:text-steel-azure transition-colors font-mono">
-                      0x7f3...a9b2
-                    </td>
-                    <td className="p-4 text-green-400 flex items-center gap-2">
-                      <CheckCircle size={12} /> VERIFIED
-                    </td>
-                    <td className="p-4 text-right">
-                      <button className="text-platinum/40 hover:text-platinum hover:scale-110 transition-transform">
-                        <ExternalLink size={14} />
-                      </button>
-                    </td>
+                {stats.logs && stats.logs.length > 0 ? stats.logs.map((log, i) => (
+                  <tr key={i} className="hover:bg-steel-azure/5 transition-colors">
+                    <td className="p-4 whitespace-nowrap">{log.timestamp}</td>
+                    <td className="p-4"><span className="px-2 py-1 rounded bg-platinum/5 text-xs border border-platinum/10">{log.event_type}</span></td>
+                    <td className="p-4 text-platinum/40 font-mono text-xs">{log.hash}</td>
+                    <td className="p-4 text-green-400 font-bold text-xs">{log.status}</td>
                   </tr>
-                ))}
+                )) : (
+                  <tr><td colSpan="4" className="p-8 text-center text-platinum/30">No audit logs available.</td></tr>
+                )}
               </tbody>
             </table>
           </div>
@@ -119,9 +123,8 @@ export default function Dashboard() {
   );
 }
 
-// Helper Component for Stats
-const StatCard = ({ icon, label, value, sub, borderColor, glowColor }) => (
-  <div className={`group bg-deep-twilight/40 backdrop-blur-xl p-6 rounded-2xl border ${borderColor} transition-all duration-300 ${glowColor}`}>
+const StatCard = ({ icon, label, value, sub, borderColor }) => (
+  <div className={`bg-deep-twilight/40 backdrop-blur-xl p-6 rounded-2xl border ${borderColor}`}>
     <div className="flex justify-between items-start mb-4">
       <div className="p-3 bg-onyx/40 rounded-xl border border-white/5">{icon}</div>
       <span className="font-mono text-xs text-platinum/50 uppercase tracking-wider">{label}</span>
@@ -130,7 +133,3 @@ const StatCard = ({ icon, label, value, sub, borderColor, glowColor }) => (
     <div className="text-xs text-platinum/40 font-mono">{sub}</div>
   </div>
 );
-
-const CheckCircle = ({ size }) => (
-    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path><polyline points="22 4 12 14.01 9 11.01"></polyline></svg>
-)

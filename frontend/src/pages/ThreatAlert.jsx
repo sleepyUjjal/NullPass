@@ -27,19 +27,19 @@ export default function ThreatAlert() {
           <div className="p-8 space-y-6">
             <div className="bg-onyx/80 rounded-lg p-5 font-mono text-xs space-y-3 border border-red-500/20 text-red-300 shadow-inner">
               <p className="flex gap-2">
-                <span className="text-red-500">>></span> 
+                <span className="text-red-500">{'>>'}</span> 
                 <span>ERROR_CODE: <span className="text-white font-bold">INVALID_SIGNATURE_ECDSA</span></span>
               </p>
               <p className="flex gap-2">
-                <span className="text-red-500">>></span> 
+                <span className="text-red-500">{'>>'}</span> 
                 <span>SOURCE_IP: <span className="text-white">192.168.1.XX</span> (Unknown Device)</span>
               </p>
               <p className="flex gap-2">
-                <span className="text-red-500">>></span> 
+                <span className="text-red-500">{'>>'}</span> 
                 <span>ACTION: <span className="text-white font-bold decoration-wavy underline">SESSION_TERMINATED</span></span>
               </p>
               <p className="flex gap-2 border-t border-red-500/20 pt-2 mt-2 text-platinum/40">
-                <span className="text-red-500">>></span> 
+                <span className="text-red-500">{'>>'}</span> 
                 <span>TIMESTAMP: {new Date().toISOString()}</span>
               </p>
             </div>
