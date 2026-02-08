@@ -7,4 +7,14 @@ export default defineConfig({
   plugins: [react(),
     tailwindcss(),
   ],
+  server: {
+    // This connects React to Django during development
+    proxy: {
+      '/api': {
+        target: 'http://127.0.0.1:8000', // Your Django Server
+        changeOrigin: true,
+        secure: false,
+      },
+    },
+  },
 })

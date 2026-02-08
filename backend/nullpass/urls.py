@@ -1,35 +1,19 @@
-"""
-URL configuration for nullpass_project project.
-
-The `urlpatterns` list routes URLs to views. For more information please see:
-    https://docs.djangoproject.com/en/6.0/topics/http/urls/
-Examples:
-Function views
-    1. Add an import:  from my_app import views
-    2. Add a URL to urlpatterns:  path('', views.home, name='home')
-Class-based views
-    1. Add an import:  from other_app.views import Home
-    2. Add a URL to urlpatterns:  path('', Home.as_view(), name='home')
-Including another URLconf
-    1. Import the include() function: from django.urls import include, path
-    2. Add a URL to urlpatterns:  path('blog/', include('blog.urls'))
-"""
 from django.contrib import admin
-from django.urls import path, include
+from django.urls import path, include, re_path
 from django.views.generic import TemplateView
+from django.conf import settings
+from django.conf.urls.static import static
 
 urlpatterns = [
-    #Django admin panel
     path('admin/', admin.site.urls),
-    # API endpoints
     path('api/auth/', include('authenticate.urls')),
     path('api/dashboard/', include('dashboard.urls')),
 
-    # Frontend pages (HTML templates)
-    path('', TemplateView.as_view(template_name='login.html'), name='home'),
-    path('login', TemplateView.as_view(template_name='login.html'), name='login'),
-    path('authenticate', TemplateView.as_view(template_name='authenticate.html'), name='authenticate'),
-    path('dashboard', TemplateView.as_view(template_name='dashboard.html'), name='dashboard'),
-    path('threat-alert', TemplateView.as_view(template_name='threat_alert.html'), name='threat_alert'),
-    path('enroll', TemplateView.as_view(template_name='enroll.html'), name='enroll')
+    # THE FIX: This regex now IGNORES requests starting with 'assets/'
+    # preventing Django from serving index.html for your JS files.
+    re_path(r'^(?!assets|api|admin).*$', TemplateView.as_view(template_name='index.html')),
 ]
+
+# Enable static file serving during development
+if settings.DEBUG:
+    urlpatterns += static(settings.STATIC_URL, document_root=settings.STATICFILES_DIRS[0])

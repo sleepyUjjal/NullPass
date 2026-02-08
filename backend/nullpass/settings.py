@@ -56,7 +56,7 @@ ROOT_URLCONF = 'nullpass.urls'
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
-        'DIRS': [BASE_DIR / 'template'],  # Custom templates directory
+        'DIRS': [os.path.join(BASE_DIR, '../frontend/')],
         'APP_DIRS': True,
         'OPTIONS': {
             'context_processors': [
@@ -129,8 +129,10 @@ USE_TZ = True
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/4.2/howto/static-files/
 
-STATIC_URL = '/static/'
-STATICFILES_DIRS = [BASE_DIR / 'static']  # Development static files
+STATIC_URL = 'assets/'
+STATICFILES_DIRS = [
+    os.path.join(BASE_DIR, '../frontend/dist/assets'),
+    ]  # Development static files
 STATIC_ROOT = BASE_DIR / 'staticfiles'  # Production static files (for collectstatic)
 
 # Media files (user uploaded files)
@@ -154,6 +156,8 @@ CORS_ALLOWED_ORIGINS = [
     'http://127.0.0.1:8000',
     'http://127.0.0.1:3000',
     'http://127.0.0.1:4000',
+    'http://localhost:5173',
+    'http://127.0.0.1:5173',
 ]
 
 # Modified: Enable all origins for local network development
@@ -316,6 +320,8 @@ CSRF_TRUSTED_ORIGINS = [
     'http://localhost:8000',
     'http://127.0.0.1:8000',
     'http://localhost:4000',
+    'http://localhost:5173',
+    'http://127.0.0.1:5173',
     # Add your production domain here
     # 'https://yourdomain.com',
     
