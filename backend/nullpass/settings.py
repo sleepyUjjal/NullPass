@@ -5,6 +5,7 @@ Django settings for nullpass.
 from pathlib import Path
 import os
 from decouple import config
+import dj_database_url as db
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -75,13 +76,14 @@ WSGI_APPLICATION = 'nullpass.wsgi.application'
 # Database
 # https://docs.djangoproject.com/en/4.2/ref/settings/#databases
 
-DATABASES = {
+"""DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.sqlite3',
         'NAME': BASE_DIR / 'db.sqlite3',
     }
-}
+}"""
 
+DATABASES["default"] = db.parse("postgresql://null_db_kns6_user:e1GuKb5AthJwTyn00fS36kLXQg3GAO2n@dpg-d640g2fpm1nc738end4g-a/null_db_kns6")
 # For production, use PostgreSQL:
 # DATABASES = {
 #     'default': {
