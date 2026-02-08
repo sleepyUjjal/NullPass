@@ -277,8 +277,8 @@ def verify_signature(request):
             'session_token', 
             session_token, 
             httponly=True,
-            samesite='Lax', 
-            secure=False, # Set True in production with HTTPS
+            samesite='None', 
+            secure=True, # Set True in production with HTTPS
             path='/'      # This ensures cookie is visible on all pages
         )
         return response
