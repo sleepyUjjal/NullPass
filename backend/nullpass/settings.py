@@ -12,13 +12,13 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = os.environ.get('SECRET_KEY')
+SECRET_KEY = config('SECRET_KEY', default='django-insecure-change-this-in-production-123456789')
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = os.environ.get('DEBUG', 'False').lower() == 'true'
+DEBUG = config('DEBUG', default=True, cast=bool)
 
 # Modified: Allow '*' by default to support accessing via any local network IP
-ALLOWED_HOSTS = os.environ.get('ALLOWED_HOSTS').split(' ')
+ALLOWED_HOSTS = ['*']
 
 
 # Application definition
@@ -76,15 +76,14 @@ WSGI_APPLICATION = 'nullpass.wsgi.application'
 # Database
 # https://docs.djangoproject.com/en/4.2/ref/settings/#databases
 
-DATABASES = {
+"""DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.sqlite3',
         'NAME': BASE_DIR / 'db.sqlite3',
     }
-}
+}"""
 
-db_url = os.environ.get('DATABASE_URL')
-DATABASES['default'] = db.parse(db_url)
+DATABASES["default"] = db.parse("postgresql://null_db_kns6_user:e1GuKb5AthJwTyn00fS36kLXQg3GAO2n@dpg-d640g2fpm1nc738end4g-a/null_db_kns6")
 # For production, use PostgreSQL:
 # DATABASES = {
 #     'default': {
