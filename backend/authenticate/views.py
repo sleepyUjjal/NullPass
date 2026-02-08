@@ -334,7 +334,7 @@ def check_challenge_status(request):
                     latest_session.session_token,
                     httponly=True,
                     samesite='Lax', # Must be None if Front/Back are on different domains
-                    secure=False,   # Set True if using HTTPS (which you are now!)
+                    secure=True,   # Set True if using HTTPS (which you are now!)
                     path='/'
                 )
                 return response
