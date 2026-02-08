@@ -294,6 +294,10 @@ def verify_signature(request):
 
 @require_http_methods(["GET"])
 def check_challenge_status(request):
+    """
+    Check status of challenge. 
+    If verified, FIND the session and SET THE COOKIE for the PC.
+    """
     challenge_id = request.GET.get('challenge_id')
     
     if not challenge_id:
@@ -302,15 +306,46 @@ def check_challenge_status(request):
     try:
         challenge = AuthenticationChallenge.objects.get(challenge_id=challenge_id)
         
-        return JsonResponse({
+        response_data = {
             'is_used': challenge.is_used,
             'is_expired': challenge.check_expired(),
-            'authenticated': challenge.is_used and challenge.device is not None
-        })
+            'authenticated': False
+        }
+
+        # If the challenge was used successfully by the phone...
+        if challenge.is_used and challenge.device:
+            response_data['authenticated'] = True
+            
+            # --- CRITICAL FIX: Find the session and give it to the PC ---
+            # We look for the most recent active session for this device
+            # (Created within the last few seconds by the phone)
+            try:
+                # Get the latest session for this device
+                latest_session = UserSession.objects.filter(
+                    device=challenge.device, 
+                    is_active=True
+                ).latest('created_at')
+
+                response = JsonResponse(response_data)
+
+                # SET THE COOKIE ON THE PC
+                response.set_cookie(
+                    'session_token',
+                    latest_session.session_token,
+                    httponly=True,
+                    samesite='Lax', # Must be None if Front/Back are on different domains
+                    secure=False,   # Set True if using HTTPS (which you are now!)
+                    path='/'
+                )
+                return response
+
+            except UserSession.DoesNotExist:
+                pass # Should not happen if verify_signature worked
+        
+        return JsonResponse(response_data)
     
     except AuthenticationChallenge.DoesNotExist:
         return JsonResponse({'error': 'Challenge not found'}, status=404)
-
 
 # ============================================================================
 # SESSION VALIDATION (NAVBAR CHECK)
