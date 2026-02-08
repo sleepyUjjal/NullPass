@@ -14,6 +14,6 @@ urlpatterns = [
     path('enroll/qr', views.request_enrollment, name='api_enroll_qr'),
     
     # Session management
-    path('session/validate', views.validate_session, name='api_validate_session'),
+    path('session/validate', views.validate_session, name='validate_session'),
     path('challenge/status', views.check_challenge_status, name='api_challenge_status'),
 ]

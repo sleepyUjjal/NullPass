@@ -650,3 +650,39 @@ def logout(request):
     response = JsonResponse({'success': True, 'message': 'Logged out'})
     response.delete_cookie('session_token')
     return response
+
+@csrf_exempt
+def validate_session(request):
+    """
+    Checks if the session_token cookie is valid.
+    Used by the Frontend Navbar to toggle Login/Logout buttons.
+    """
+    if request.method != 'POST':
+        return JsonResponse({'error': 'Method not allowed'}, status=405)
+
+    # 1. Get Token from Cookie
+    token = request.COOKIES.get('session_token')
+    if not token:
+        return JsonResponse({'authenticated': False}, status=200)
+
+    # 2. Decode Token
+    payload, error = decode_jwt_token(token)
+    if error:
+        return JsonResponse({'authenticated': False, 'error': error}, status=200)
+
+    # 3. Check if Session exists in DB and is Active
+    try:
+        session = UserSession.objects.get(
+            session_id=payload['session_id'],
+            is_active=True
+        )
+        
+        # Success!
+        return JsonResponse({
+            'authenticated': True,
+            'device_name': session.device.device_name,
+            'session_id': session.session_id
+        })
+
+    except UserSession.DoesNotExist:
+        return JsonResponse({'authenticated': False}, status=200)

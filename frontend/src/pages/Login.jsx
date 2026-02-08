@@ -24,9 +24,10 @@ export default function Login() {
         setQrImage(res.data.qr_code);
         setChallengeId(res.data.challenge_id);
         
-        // Construct the URL that the "Phone" would open
-        // We use the current window location to ensure it works on localhost or production
-        const authUrl = `${window.location.origin}/authenticate?challenge_id=${res.data.challenge_id}&nonce=${res.data.nonce || ''}`; // Ensure your backend sends nonce if needed, or extract from challenge
+        // Construct the URL that the "Phone" would open for simulation
+        // Note: Your backend MUST include 'nonce' in the response for this link to work perfectly.
+        const nonce = res.data.nonce || ''; 
+        const authUrl = `${window.location.origin}/authenticate?challenge_id=${res.data.challenge_id}&nonce=${nonce}`;
         setScanUrl(authUrl);
         
         setStatus('READY'); 
@@ -57,6 +58,11 @@ export default function Login() {
         if (res.data.authenticated === true) {
           setStatus('SUCCESS');
           clearInterval(pollInterval.current);
+          
+          // --- NOTIFY NAVBAR IMMEDIATELY ---
+          window.dispatchEvent(new Event('auth-change'));
+          // ---------------------------------
+          
           setTimeout(() => navigate('/dashboard'), 1500);
         } 
         else if (res.data.is_expired === true) {
