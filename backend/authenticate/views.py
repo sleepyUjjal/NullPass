@@ -28,14 +28,35 @@ from .utils import (
     log_authentication_attempt
 )
 
-logger = logging.getLogger('authentication')
+logger = logging.getLogger('authenticate')
 
 # ============================================================================
 # CONFIGURATION
 # ============================================================================
 
-# This points QR codes to your React Frontend (Port 5173)
-FRONTEND_BASE_URL = "https://43.205.194.18"
+# This points QR codes to your React Frontend (loaded from settings via environment)
+FRONTEND_BASE_URL = settings.FRONTEND_BASE_URL
+CHALLENGE_EXPIRATION_MINUTES = settings.CHALLENGE_EXPIRATION_MINUTES
+ENROLLMENT_CHALLENGE_EXPIRATION_MINUTES = settings.ENROLLMENT_CHALLENGE_EXPIRATION_MINUTES
+QR_CODE_VERSION = settings.QR_CODE_VERSION
+QR_CODE_BOX_SIZE = settings.QR_CODE_BOX_SIZE
+QR_CODE_BORDER = settings.QR_CODE_BORDER
+
+
+def generate_qr_data_uri(payload):
+    qr = qrcode.QRCode(
+        version=QR_CODE_VERSION,
+        box_size=QR_CODE_BOX_SIZE,
+        border=QR_CODE_BORDER,
+    )
+    qr.add_data(payload)
+    qr.make(fit=True)
+
+    img = qr.make_image(fill_color="black", back_color="white")
+    buffer = io.BytesIO()
+    img.save(buffer, format='PNG')
+    img_base64 = base64.b64encode(buffer.getvalue()).decode('utf-8')
+    return f'data:image/png;base64,{img_base64}'
 
 
 # ============================================================================
@@ -110,7 +131,7 @@ def request_login(request):
             challenge_id=challenge_id,
             nonce=nonce,
             ip_address=metadata['ip_address'],
-            expires_at=timezone.now() + timedelta(minutes=5)
+            expires_at=timezone.now() + timedelta(minutes=CHALLENGE_EXPIRATION_MINUTES)
         )
         
         # 2. Build URL pointing to FRONTEND (5173)
@@ -118,20 +139,13 @@ def request_login(request):
         auth_url = f"{FRONTEND_BASE_URL}/authenticate?challenge_id={challenge_id}&nonce={nonce}"
         
         # 3. Generate QR code
-        qr = qrcode.QRCode(version=1, box_size=10, border=5)
-        qr.add_data(auth_url)
-        qr.make(fit=True)
-        
-        img = qr.make_image(fill_color="black", back_color="white")
-        buffer = io.BytesIO()
-        img.save(buffer, format='PNG')
-        img_base64 = base64.b64encode(buffer.getvalue()).decode('utf-8')
+        qr_code_data_uri = generate_qr_data_uri(auth_url)
         
         return JsonResponse({
             'success': True,
             'challenge_id': challenge_id,
             'nonce': nonce,          # Required for simulation
-            'qr_code': f'data:image/png;base64,{img_base64}',
+            'qr_code': qr_code_data_uri,
             'auth_url': auth_url
         })
     
@@ -159,25 +173,18 @@ def request_enrollment(request):
         AuthenticationChallenge.objects.create(
             challenge_id=challenge_id,
             nonce=nonce,
-            expires_at=timezone.now() + timedelta(minutes=10)
+            expires_at=timezone.now() + timedelta(minutes=ENROLLMENT_CHALLENGE_EXPIRATION_MINUTES)
         )
 
         # Build URL pointing to FRONTEND (5173) with action=enroll
         auth_url = f"{FRONTEND_BASE_URL}/authenticate?action=enroll&challenge_id={challenge_id}&nonce={nonce}"
         
-        qr = qrcode.QRCode(version=1, box_size=10, border=5)
-        qr.add_data(auth_url)
-        qr.make(fit=True)
-        
-        img = qr.make_image(fill_color="black", back_color="white")
-        buffer = io.BytesIO()
-        img.save(buffer, format='PNG')
-        img_base64 = base64.b64encode(buffer.getvalue()).decode('utf-8')
+        qr_code_data_uri = generate_qr_data_uri(auth_url)
         
         return JsonResponse({
             'success': True,
             'challenge_id': challenge_id,
-            'qr_code': f'data:image/png;base64,{img_base64}',
+            'qr_code': qr_code_data_uri,
             'enrollment_url': auth_url
         })
     

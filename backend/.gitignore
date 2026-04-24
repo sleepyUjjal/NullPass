@@ -47,3 +47,6 @@ logs/
 
 
 db.sqlite3
+
+# Supabase local metadata (do not commit)
+supabase/
